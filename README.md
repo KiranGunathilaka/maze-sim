@@ -1,6 +1,6 @@
 # mms-cpp
 
-Write a Micromouse maze-solving algorithm in C++.
+Written a Micromouse maze-solving algorithm for Jerry2D2.
 
 For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse simulator.
 
@@ -14,13 +14,8 @@ For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse sim
 
 ## Examples
 
-Windows:
-
 ![](https://github.com/mackorone/mms-cpp/blob/master/config-windows.png)
 
-Linux (Ubuntu):
-
-![](https://github.com/mackorone/mms-cpp/blob/master/config-linux.png)
 
 
 ## Notes
