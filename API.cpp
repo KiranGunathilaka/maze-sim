@@ -7,6 +7,8 @@ int API::mazeWidth() {
     std::cout << "mazeWidth" << std::endl;
     std::string response;
     std::cin >> response;
+    std::cerr << "Maze Weight";
+    std::cerr << response << std::endl;
     return atoi(response.c_str());
 }
 
@@ -14,6 +16,8 @@ int API::mazeHeight() {
     std::cout << "mazeHeight" << std::endl;
     std::string response;
     std::cin >> response;
+    std::cerr << "Maze Height";
+    std::cerr << response << std::endl;
     return atoi(response.c_str());
 }
 
@@ -21,6 +25,8 @@ bool API::wallFront() {
     std::cout << "wallFront" << std::endl;
     std::string response;
     std::cin >> response;
+    std::cerr << "Front : ";
+    std::cerr << response << std::endl;
     return response == "true";
 }
 
@@ -28,6 +34,8 @@ bool API::wallRight() {
     std::cout << "wallRight" << std::endl;
     std::string response;
     std::cin >> response;
+    std::cerr << "Right : ";
+    std::cerr << response << std::endl;
     return response == "true";
 }
 
@@ -35,6 +43,8 @@ bool API::wallLeft() {
     std::cout << "wallLeft" << std::endl;
     std::string response;
     std::cin >> response;
+    std::cerr << "Left : ";
+    std::cerr << response << std::endl;
     return response == "true";
 }
 
@@ -48,22 +58,37 @@ void API::moveForward(int distance) {
     std::cout << std::endl;
     std::string response;
     std::cin >> response;
+    std::cerr << response << std::endl;
     if (response != "ack") {
         std::cerr << response << std::endl;
         throw;
     }
 }
 
+void API::moveForwardHalf(int distance){
+
+}
+
 void API::turnRight() {
     std::cout << "turnRight" << std::endl;
     std::string ack;
     std::cin >> ack;
+    std::cerr << ack << std::endl;
 }
 
 void API::turnLeft() {
     std::cout << "turnLeft" << std::endl;
     std::string ack;
     std::cin >> ack;
+    std::cerr << ack << std::endl;
+}
+
+void API::turnLeft45(){
+
+}
+
+void API::turnRight45(){
+    
 }
 
 void API::setWall(int x, int y, char direction) {
