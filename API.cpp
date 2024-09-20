@@ -25,8 +25,6 @@ bool API::wallFront() {
     std::cout << "wallFront" << std::endl;
     std::string response;
     std::cin >> response;
-    std::cerr << "Front : ";
-    std::cerr << response << std::endl;
     return response == "true";
 }
 
@@ -34,8 +32,6 @@ bool API::wallRight() {
     std::cout << "wallRight" << std::endl;
     std::string response;
     std::cin >> response;
-    std::cerr << "Right : ";
-    std::cerr << response << std::endl;
     return response == "true";
 }
 
@@ -43,8 +39,7 @@ bool API::wallLeft() {
     std::cout << "wallLeft" << std::endl;
     std::string response;
     std::cin >> response;
-    std::cerr << "Left : ";
-    std::cerr << response << std::endl;
+
     return response == "true";
 }
 
@@ -58,10 +53,11 @@ void API::moveForward(int distance) {
     std::cout << std::endl;
     std::string response;
     std::cin >> response;
-    std::cerr << response << std::endl;
     if (response != "ack") {
         std::cerr << response << std::endl;
         throw;
+    }else{
+        std::cerr << "moving forward" << std::endl;
     }
 }
 
@@ -73,14 +69,19 @@ void API::turnRight() {
     std::cout << "turnRight" << std::endl;
     std::string ack;
     std::cin >> ack;
-    std::cerr << ack << std::endl;
+    if(ack == "ack"){
+        std::cerr << "Turning right" << std::endl;
+    }
 }
 
 void API::turnLeft() {
     std::cout << "turnLeft" << std::endl;
     std::string ack;
     std::cin >> ack;
-    std::cerr << ack << std::endl;
+
+    if(ack == "ack"){
+        std::cerr << "Turning Left" << std::endl;
+    }
 }
 
 void API::turnLeft45(){

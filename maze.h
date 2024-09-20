@@ -2,11 +2,19 @@
 #define MAZE_H
 
 #include <stdint.h>
+#include <iostream>
+#include <string>
+#include "queue.h"
+#include "API.h"
 
 const int MAZE_WIDTH = 16;
 const int MAZE_HEIGHT = 16;
+const int MAZE_CELL_COUNT = MAZE_WIDTH * MAZE_HEIGHT;
+const int MAX_COST = MAZE_CELL_COUNT - 1;
+const int QUEUE_SIZE = 512;
 
 #define START Location(0, 0)
+#define TARGET Location(7, 7)
 
 enum WallState
 {
@@ -16,7 +24,7 @@ enum WallState
     VIRTUAL = 3, // a wall that has not yet been seen
 };
 
-//2 bits are reserved for each side. the 2 bit wallState will be stored there
+// 2 bits are reserved for each side. the 2 bit wallState will be stored there
 struct WallInfo
 {
     WallState north : 2;
@@ -74,15 +82,13 @@ enum Direction
     DIRECTION_COUNT
 };
 
-
-
 class Location
 {
 public:
     uint8_t x;
     uint8_t y;
 
-    //using member initializer lists are said to be faster ? 
+    // using member initializer lists are said to be faster ?
     Location() : x(0), y(0){}; // default constructor will set the location to (0,0)
     Location(uint8_t ix, uint8_t iy) : x(ix), y(iy){};
 
@@ -91,8 +97,8 @@ public:
         return x < MAZE_WIDTH && y < MAZE_HEIGHT;
     }
 
-    //these operator overload functions will return, false or true when two location 
-    //objects are compared using != , == .
+    // these operator overload functions will return, false or true when two location
+    // objects are compared using != , == .
     bool operator==(const Location &obj) const
     {
         return x == obj.x && y == obj.y;
@@ -148,8 +154,6 @@ public:
     }
 };
 
-
-
 class Maze
 {
 public:
@@ -157,6 +161,10 @@ public:
     {
     }
 
+    uint8_t get_cost(int x, int y)
+    {
+        return m_cost[x][y];
+    }
 
     // returns wall info struct with 8 bits
     WallInfo walls(const Location cell) const
@@ -164,7 +172,7 @@ public:
         return m_walls[cell.x][cell.y];
     }
 
-    //checks whther value in every side in the struct is equal to 10
+    // checks whther value in every side in the struct is equal to 10
     bool has_unknown_walls(const Location cell) const
     {
         WallInfo walls_here = m_walls[cell.x][cell.y];
@@ -183,8 +191,8 @@ public:
         return not has_unknown_walls(cell);
     }
 
-    //if wall is known then whether it is mask open or close it will return 00 ( ex : 00 & 01 or 00 & 11 -> exit , 01 & 01 or 01 & 11 will -> wall)
-    // if it is unknown then wallState is 10. so it will only return as a EXIT (00) if the mask is open (10 & 01 -> exit, 10 & 11 -> 10 (unknown))
+    // if wall is known then whether it is mask open or close it will return 00 ( ex : 00 & 01 or 00 & 11 -> exit , 01 & 01 or 01 & 11 will -> wall)
+    //  if it is unknown then wallState is 10. so it will only return as a EXIT (00) if the mask is open (10 & 01 -> exit, 10 & 11 -> 10 (unknown))
     bool is_exit(const Location cell, const Heading heading) const
     {
         bool result = false;
@@ -211,7 +219,7 @@ public:
         return result;
     }
 
-    //only updates the wall if the given cell wall is unknown
+    // only updates the wall if the given cell wall is unknown
     void update_wall_state(const Location cell, const Heading heading, const WallState state)
     {
         switch (heading)
@@ -248,8 +256,8 @@ public:
     }
 
     void initialise()
-    {   
-        //initialize every wall to be unknown (10)
+    {
+        // initialize every wall to be unknown (10)
         for (int x = 0; x < MAZE_WIDTH; x++)
         {
             for (int y = 0; y < MAZE_HEIGHT; y++)
@@ -261,7 +269,7 @@ public:
             }
         }
 
-        //setting corner most north south east west walls as WALL (01)
+        // setting corner most north south east west walls as WALL (01)
         for (int x = 0; x < MAZE_WIDTH; x++)
         {
             m_walls[x][0].south = WALL;
@@ -273,14 +281,14 @@ public:
             m_walls[MAZE_WIDTH - 1][y].east = WALL;
         }
 
-        //setting 0,0 wall states
-        //  ―  for logging
-        // set_wall_state(START, EAST, WALL); //not sure whether this is necessary?
-        // set_wall_state(START, NORTH, EXIT);
+        // setting 0,0 wall states
+        //   ―  for logging
+        //  set_wall_state(START, EAST, WALL); //not sure whether this is necessary?
+        //  set_wall_state(START, NORTH, EXIT);
 
         // the open maze treats unknowns as exits
-        set_mask(MASK_CLOSED);
-        //flood(goal());
+        set_mask(MASK_OPEN);
+        flood(TARGET);
     }
 
     void set_mask(const MazeMask mask)
@@ -293,8 +301,110 @@ public:
         return m_mask;
     }
 
+    uint16_t neighbour_cost(const Location cell, const Heading heading) const
+    {
+        if (not is_exit(cell, heading))
+        {
+            return MAX_COST; // returns the MAX_COST if the heading in the cell has a wall
+        }
+        Location next_cell = cell.neighbour(heading);
+        return m_cost[next_cell.x][next_cell.y];
+    }
 
+    uint16_t cost(const Location cell) const
+    {
+        return m_cost[cell.x][cell.y];
+    }
 
+    void flood(const Location target)
+    {
+        for (int x = 0; x < MAZE_WIDTH; x++)
+        {
+            for (int y = 0; y < MAZE_HEIGHT; y++)
+            {
+                m_cost[x][y] = (uint8_t)MAX_COST;
+            }
+        }
+
+        // flood is starting from the target cell. after a searching round and reaching the
+        // target cell, flood operation will be conducted
+        // first cell in the queue will be the target cell
+        Queue<Location, QUEUE_SIZE> queue;
+        m_cost[target.x][target.y] = 0;
+        queue.add(target);
+        API::setText(target.x, target.y, std::to_string(0));
+        while (queue.size() > 0)
+        {
+            // sets the current flood location from the here, initially it's the target
+            Location here = queue.head();
+            // before searching for a EXIT and move there, cost is incremented
+            uint16_t newCost = m_cost[here.x][here.y] + 1;
+
+            // the casting of enums is potentially problematic
+            // check all 4 walls while staying in the current flood location
+            for (int h = NORTH; h < HEADING_COUNT; h++)
+            {
+                Heading heading = static_cast<Heading>(h);
+                // checks whether the current flood cell has a EXIT in any wall
+                if (is_exit(here, heading))
+                {
+                    // the neigbour will return the coordinate for the opened wall will lead
+                    Location nextCell = here.neighbour(heading);
+                    // checks whether the cell already have a cost value assigned to it.
+                    // if the assigned value is smaller than the current assigning newCost, then the cost for that cell will be
+                    // the newCost
+                    if (m_cost[nextCell.x][nextCell.y] > newCost)
+                    {
+                        m_cost[nextCell.x][nextCell.y] = newCost;
+                        API::setText(nextCell.x, nextCell.y, std::to_string(newCost));
+                        // the neigbour cell is added to the queue so that next iteration of the flood can use
+                        // this cell as the current flood cell
+                        queue.add(nextCell);
+                    }
+                }
+            }
+        }
+    }
+
+    Heading heading_to_smallest(const Location cell, const Heading start_heading) const
+    {
+        Heading next_heading = start_heading;
+        Heading best_heading = BLOCKED;
+        uint16_t best_cost = cost(cell);
+        uint16_t cost;
+        cost = neighbour_cost(cell, next_heading);
+        if (cost < best_cost)
+        {
+            best_cost = cost;
+            best_heading = next_heading;
+        };
+        next_heading = right_from(start_heading);
+        cost = neighbour_cost(cell, next_heading);
+        if (cost < best_cost)
+        {
+            best_cost = cost;
+            best_heading = next_heading;
+        };
+        next_heading = left_from(start_heading);
+        cost = neighbour_cost(cell, next_heading);
+        if (cost < best_cost)
+        {
+            best_cost = cost;
+            best_heading = next_heading;
+        };
+        next_heading = behind_from(start_heading);
+        cost = neighbour_cost(cell, next_heading);
+        if (cost < best_cost)
+        {
+            best_cost = cost;
+            best_heading = next_heading;
+        };
+        if (best_cost == MAX_COST)
+        {
+            best_heading = BLOCKED;
+        }
+        return best_heading;
+    }
 
 private:
     // Unconditionally set a wall state.
@@ -325,7 +435,7 @@ private:
         }
     }
     MazeMask m_mask = MASK_OPEN;
-    //Location m_goal = TARGET;
+    Location m_goal = TARGET;
 
     uint8_t m_cost[MAZE_WIDTH][MAZE_HEIGHT];
     WallInfo m_walls[MAZE_WIDTH][MAZE_HEIGHT];
