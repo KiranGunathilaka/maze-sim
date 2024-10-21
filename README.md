@@ -4,8 +4,8 @@ Micromouse maze-solving algorithm written for the Jerry2D2 micro mouse.
 
 For use with [mackorone/mms](https://github.com/mackorone/mms), Micromouse simulator.
 
-How to run this code on mackorone's mms. (Below are from his readme.md)
-## Setup
+##How to run this code on mackorone's mms. (Below are from his readme.md)
+### Setup
 
 1. Clone this repository
 1. [Download the Micromouse simulator](https://github.com/mackorone/mms#download)
@@ -13,7 +13,7 @@ How to run this code on mackorone's mms. (Below are from his readme.md)
 1. Enter the config for your algorithm (name, directory, build command, and run command)
 1. Click the "Run" button
 
-## Examples
+### Examples
 
 ![](https://github.com/mackorone/mms-cpp/blob/master/config-windows.png)
 
