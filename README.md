@@ -1,8 +1,8 @@
 # mms-cpp
 
-Written a Micromouse maze-solving algorithm for Jerry2D2.
+Micromouse maze-solving algorithm written for the Jerry2D2 micro mouse.
 
-For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse simulator.
+For use with [mackorone/mms](https://github.com/mackorone/mms), Micromouse simulator.
 
 ## Setup
 
